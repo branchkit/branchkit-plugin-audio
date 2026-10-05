@@ -1,0 +1,38 @@
+[
+  {
+    "pattern": ["volume", "up"],
+    "action": { "type": "audio.volume_up" },
+    "category": "Audio",
+    "description": "Raise the output volume, unmuting if it was muted."
+  },
+  {
+    "pattern": ["volume", "down"],
+    "action": { "type": "audio.volume_down" },
+    "category": "Audio",
+    "description": "Lower the output volume, unmuting if it was muted."
+  },
+  {
+    "pattern": ["mute audio"],
+    "action": { "type": "audio.mute" },
+    "category": "Audio",
+    "description": "Mute the output."
+  },
+  {
+    "pattern": ["unmute audio"],
+    "action": { "type": "audio.unmute" },
+    "category": "Audio",
+    "description": "Unmute the output."
+  },
+  {
+    "pattern": [["set", "switch"], "output", "<device:audio_outputs>"],
+    "action": { "type": "audio.set_output", "params": { "device": "{device}" } },
+    "category": "Audio",
+    "description": "Switch the audio output to a named device."
+  },
+  {
+    "pattern": [["set", "switch"], "input", "<device:audio_inputs>"],
+    "action": { "type": "audio.set_input", "params": { "device": "{device}" } },
+    "category": "Audio",
+    "description": "Switch the audio input to a named device."
+  }
+]

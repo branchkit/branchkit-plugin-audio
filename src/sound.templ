@@ -1,0 +1,103 @@
+package main
+
+import "github.com/branchkit/plugin-sdk-go"
+import "github.com/branchkit/plugin-sdk-go/ui"
+import "fmt"
+import "strconv"
+
+templ deviceList(devices []deviceView, deviceType string) {
+	for _, dev := range devices {
+		<div class="settings-row">
+			<div class="label">
+				<div class="sound-device-name">{ dev.Name }</div>
+				<div class="alias-tags sound-device-names">
+					// Every name that selects this device, said in full: what
+					// is shown is what the collection holds, so it is what
+					// works.
+					for _, name := range dev.Say {
+						<span class="alias-tag">
+							<code class="sound-device-cmd">{ "set " + deviceType + " " + name }</code>
+							if dev.Removable[name] {
+								<button type="button" title={ "Stop " + strconv.Quote(name) + " naming " + dev.Name }
+									data-on:click={ branchkit.MethodPost("device_alias_remove", ui.Args("uid", dev.UID, "alias", name)) }>&#215;</button>
+							}
+						</span>
+					}
+					<div data-show={ "$editingDevice === " + ui.JS(dev.UID) }>
+						<input class="add-alias-input" type="text" data-bind="newAlias" placeholder="e.g. headphones"
+							aria-label={ "New name for " + dev.Name }
+							data-on:keydown={ "evt.key === 'Enter' && (" + branchkit.MethodPost("device_alias_add", ui.Args("uid", dev.UID, "alias", ui.Expr("$newAlias"))) + ", $editingDevice = ''); evt.key === 'Escape' && ($editingDevice = '')" }
+							data-on:blur__debounce.150ms="$editingDevice = ''"/>
+					</div>
+					<div data-show={ "$editingDevice !== " + ui.JS(dev.UID) }>
+						<button type="button" class="icon-btn add-btn" title={ "Add a name for " + dev.Name }
+							data-on:click={ "evt.stopPropagation(); $editingDevice = " + ui.JS(dev.UID) + "; $newAlias = ''" }>+</button>
+					</div>
+				</div>
+			</div>
+			<div class="row-actions">
+				// Choosing a device is a real button beside the name, not a
+				// click on the name: a span handler reached neither Tab, a screen
+				// reader nor a hint overlay, and nothing said the name did anything.
+				if dev.IsDefault {
+					<span class="badge badge-core">Default</span>
+				} else {
+					<button type="button" class="small" title={ "Make " + dev.Name + " the default " + deviceType }
+						data-on:click={ branchkit.MethodPost("set_device", ui.Args("uid", dev.UID, "device_type", deviceType)) }>Make default</button>
+				}
+			</div>
+		</div>
+	}
+}
+
+templ Sound(data soundSettingsData) {
+	<bk-table columns="1fr 1fr"
+		data-signals={ fmt.Sprintf(`{"volume": %d, "muted": %s, "editingDevice": "", "newAlias": ""}`, data.Volume, strconv.FormatBool(data.Muted)) }>
+		<div class="settings-row">
+			<div class="label">Volume</div>
+			<div class="value-cell sound-stepper">
+				<button type="button" class="segmented-btn" title="Volume down"
+					data-on:click={ fmt.Sprintf("$volume = %d; ", data.VolumeMinus) + branchkit.MethodPost("set_volume", "") }>&#8722;</button>
+				<span class="sound-volume-readout">{ fmt.Sprintf("%d", data.Volume) }%</span>
+				<button type="button" class="segmented-btn" title="Volume up"
+					data-on:click={ fmt.Sprintf("$volume = %d; ", data.VolumePlus) + branchkit.MethodPost("set_volume", "") }>+</button>
+			</div>
+		</div>
+		<div class="settings-row">
+			<div class="label">Mute</div>
+			<div class="value-cell sound-toggle">
+				<button type="button" class={ "segmented-btn", templ.KV("is-active", data.Muted) } aria-pressed={ strconv.FormatBool(data.Muted) }
+					data-on:click={ "$muted = true; " + branchkit.MethodPost("set_mute", "") }>On</button>
+				<button type="button" class={ "segmented-btn", templ.KV("is-active", !data.Muted) } aria-pressed={ strconv.FormatBool(!data.Muted) }
+					data-on:click={ "$muted = false; " + branchkit.MethodPost("set_mute", "") }>Off</button>
+			</div>
+		</div>
+	</bk-table>
+	if len(data.Outputs) > 0 {
+		<bk-table columns="2fr 120px" class="sound-table">
+			<div class="table-header">
+				<div>Output devices</div>
+				<div class="align-right">Status</div>
+			</div>
+			@deviceList(data.Outputs, "output")
+		</bk-table>
+	}
+	if len(data.Inputs) > 0 {
+		<bk-table columns="2fr 120px" class="sound-table">
+			<div class="table-header">
+				<div>Input devices</div>
+				<div class="align-right">Status</div>
+			</div>
+			@deviceList(data.Inputs, "input")
+		</bk-table>
+	}
+	<div class="sound-hints">
+		<div class="sound-hints-title">Voice commands</div>
+		<div class="sound-hints-grid">
+			<span><code>volume up</code> / <code>volume down</code></span>
+			<span><code>mute audio</code> / <code>unmute audio</code></span>
+			<span><code>set output &lt;device&gt;</code></span>
+			<span><code>set input &lt;device&gt;</code></span>
+		</div>
+	</div>
+}

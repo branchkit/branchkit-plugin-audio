@@ -1,0 +1,104 @@
+{
+  "$schema": "https://branchkit.dev/schemas/manifest.json",
+  "id": "audio",
+  "name": "Audio",
+  "icon": "volume",
+  "requires": {
+    "privileges": [
+      "audio"
+    ],
+    "capabilities": {
+      "uses": [
+        "native.audio_devices",
+        "native.mute",
+        "native.set_audio_device",
+        "native.set_volume",
+        "native.volume"
+      ]
+    }
+  },
+  "version": "0.1.0",
+  "min_api_version": "0.2.0",
+  "description": "Volume, mute, and which audio devices you hear and speak through, by name.",
+  "author": "BranchKit",
+  "publisher": "github:branchkit",
+  "dev": {
+    "build": [
+      ["templ", "generate"],
+      ["go", "build", "-ldflags=-s -w", "-o", "../audio-plugin", "."]
+    ],
+    "build_dir": "src"
+  },
+  "run": "./audio-plugin",
+  "action_prefix": "audio",
+  "action_types": {
+    "volume_up": { "uses": ["native.volume", "native.set_volume"], "label": "Volume Up", "consequence": "reversible" },
+    "volume_down": { "uses": ["native.volume", "native.set_volume"], "label": "Volume Down", "consequence": "reversible" },
+    "mute": { "uses": ["native.mute"], "label": "Mute", "consequence": "reversible" },
+    "unmute": { "uses": ["native.mute"], "label": "Unmute", "consequence": "reversible" },
+    "set_output": { "uses": ["native.audio_devices", "native.set_audio_device"],
+      "label": "Set Audio Output Device",
+      "consequence": "reversible",
+      "fields": [
+        { "key": "device", "label": "Device", "placeholder": "headphones", "field_type": "string", "required": true }
+      ]
+    },
+    "set_input": { "uses": ["native.audio_devices", "native.set_audio_device"],
+      "label": "Set Audio Input Device",
+      "consequence": "reversible",
+      "fields": [
+        { "key": "device", "label": "Device", "placeholder": "microphone", "field_type": "string", "required": true }
+      ]
+    }
+  },
+  "provides": {
+    "collections": {
+      "audio_outputs": {
+        "id_strategy": { "type": "by_field", "field": "spoken" },
+        "preset": "named_entities",
+        "fields": [
+          { "key": "spoken", "field_type": "string", "label": "Spoken name", "required": true },
+          { "key": "uid", "field_type": "string", "label": "Device id", "required": true },
+          { "key": "name", "field_type": "string", "label": "Device name" }
+        ],
+        "feeds_matching": {
+          "type": "as_named_entities",
+          "key_field": "spoken",
+          "value_field": "uid"
+        },
+        "description": "Names you can say for each connected output device: its own name, a shorter one when that is unambiguous, and any you add. Each resolves to the device's id."
+      },
+      "audio_inputs": {
+        "id_strategy": { "type": "by_field", "field": "spoken" },
+        "preset": "named_entities",
+        "fields": [
+          { "key": "spoken", "field_type": "string", "label": "Spoken name", "required": true },
+          { "key": "uid", "field_type": "string", "label": "Device id", "required": true },
+          { "key": "name", "field_type": "string", "label": "Device name" }
+        ],
+        "feeds_matching": {
+          "type": "as_named_entities",
+          "key_field": "spoken",
+          "value_field": "uid"
+        },
+        "description": "Names you can say for each connected input device: its own name, a shorter one when that is unambiguous, and any you add. Each resolves to the device's id."
+      }
+    }
+  },
+  "consumes": {
+    "events": [
+      { "pattern": "_platform.audio_devices.changed" },
+      { "pattern": "_platform.system.did_wake" }
+    ]
+  },
+  "collection_data": {
+    "voice_commands": "commands.json"
+  },
+  "implements": {
+    "settings_tabs": [
+      { "label": "Sound", "key": "sound" }
+    ],
+    "on_action": true,
+    "render_settings": true
+  }
+}

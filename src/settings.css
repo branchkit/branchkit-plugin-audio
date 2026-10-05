@@ -1,0 +1,49 @@
+/* The audio plugin's Sound tab. Shipped through RenderSettingsResponse.CSS. */
+
+/* The "+" that opens the name editor. Larger than the icon buttons around it
+   because it is a target rather than a glyph. */
+.add-btn { font-size: var(--font-size-0); }
+
+.sound-device-name { font-weight: 500; }
+/* The names that select the device, each written as the phrase to say. */
+.sound-device-names { margin-top: var(--size--2); }
+.sound-device-cmd {
+    font-size: var(--font-size--2);
+    color: var(--_ink-dim);
+}
+
+/* Two segmented controls with different button widths: a bare +/- stepper and
+   an On/Off pair. Both use .segmented-btn and set the width on the cell. */
+.sound-stepper { --segmented-min: 28px; }
+.sound-toggle { --segmented-min: 40px; }
+/* The number between the stepper's buttons. Fixed gutter and monospace so it
+   does not shuffle the buttons as the value changes width. */
+.sound-volume-readout {
+    font-family: var(--font-mono);
+    min-width: 40px;
+    text-align: center;
+}
+
+.sound-table { margin-top: var(--size-0); }
+
+/* The phrase list under the tables. */
+.sound-hints {
+    margin-top: var(--size-3);
+    padding: var(--size--2) var(--size-0);
+    background: var(--neutral-2);
+    --_ink: var(--neutral-2-on);
+    --_ink-dim: var(--neutral-2-dim);
+    border-radius: var(--border-radius-3);
+    font-size: var(--font-size--2);
+    color: var(--_ink-dim);
+}
+.sound-hints-title {
+    margin-bottom: var(--size--2);
+    font-weight: 600;
+    color: var(--_ink-dim);
+}
+.sound-hints-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--size--2) var(--size-3);
+}
